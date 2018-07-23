@@ -1,18 +1,22 @@
 package com.codepath.apps.restclienttemplate.activities;
 
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.TwitterClient;
 import com.codepath.apps.restclienttemplate.adapters.TweetAdapter;
+import com.codepath.apps.restclienttemplate.fragment.NewTweet;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
@@ -26,17 +30,26 @@ import cz.msebera.android.httpclient.Header;
 
 public class TwitterTimeline extends AppCompatActivity {
 
-    TweetAdapter tweetAdapter;
-    ArrayList<Tweet> tweets;
+     public static TweetAdapter tweetAdapter;
+   public static ArrayList<Tweet> tweets;
     RecyclerView recyclerView;
     LinearLayoutManager linearLayoutManager;
     TwitterClient client;
     SwipeRefreshLayout swipeRefreshLayout;
+    FloatingActionButton floatingActionButton;
+
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_twitter_timeline);
+
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setIcon(R.drawable.twitter);
+
 
         swipeRefreshLayout = findViewById(R.id.timeline_refresh);
 
@@ -50,6 +63,16 @@ public class TwitterTimeline extends AppCompatActivity {
 
         tweetAdapter = new TweetAdapter(this, tweets);
         recyclerView.setAdapter(tweetAdapter);
+
+        floatingActionButton=findViewById(R.id.floating_action_button);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NewTweet newTweet=NewTweet.newInstance();
+                newTweet.show(getSupportFragmentManager(),"newtweetfragment");
+            }
+        });
+
 
         populateTimeline();
 

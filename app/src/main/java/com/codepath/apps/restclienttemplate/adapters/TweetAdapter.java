@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
+import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,6 +51,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
         viewHolder.user_screen_name.setText("@"+tweet.user.screen_name);
         viewHolder.tweet_created_at.setText(getRelativeTimeAgo(tweet.created_at));
         viewHolder.tweet_status.setText(tweet.text);
+        Linkify.addLinks(viewHolder.tweet_status,Linkify.ALL);
         Glide.with(context)
                 .load(Uri.parse(tweet.user.profile_image_url))
                 .apply(RequestOptions.bitmapTransform(new RoundedCornersTransformation(12, 4)))
