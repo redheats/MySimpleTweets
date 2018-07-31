@@ -10,7 +10,7 @@ import org.parceler.Parcels;
 
 public class ViewTweet extends AppCompatActivity {
     public Tweet tweet;
-    public
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
