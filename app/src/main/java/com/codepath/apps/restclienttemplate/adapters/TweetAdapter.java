@@ -1,6 +1,7 @@
 package com.codepath.apps.restclienttemplate.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -10,12 +11,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.codepath.apps.restclienttemplate.R;
+import com.codepath.apps.restclienttemplate.activities.ViewTweet;
+import com.codepath.apps.restclienttemplate.activities.ViewUser;
 import com.codepath.apps.restclienttemplate.models.Tweet;
+
+import org.parceler.Parcels;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -45,7 +51,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
-        Tweet tweet = tweets.get(position);
+        final Tweet tweet = tweets.get(position);
 
         viewHolder.user_name.setText(tweet.user.name);
         viewHolder.user_screen_name.setText("@"+tweet.user.screen_name);
@@ -56,6 +62,35 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
                 .load(Uri.parse(tweet.user.profile_image_url))
                 .apply(RequestOptions.bitmapTransform(new RoundedCornersTransformation(12, 4)))
                 .into(viewHolder.user_profile);
+
+        if (tweet.media != null){
+            if (tweet.media.type.equals("photo")){
+                viewHolder.tweet_image.setVisibility(View.VISIBLE);
+                Glide.with(context)
+                        .load(Uri.parse(tweet.media.media_url))
+                        .into(viewHolder.tweet_image);
+            }
+        }
+        else {
+            viewHolder.tweet_image.setVisibility(View.GONE);
+        }
+
+        viewHolder.user_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent =new Intent(context, ViewUser.class);
+                intent.putExtra("user", Parcels.wrap(tweet.user));
+                context.startActivity(intent);
+            }
+        });
+        viewHolder.tweet_body.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent =new Intent(context, ViewTweet.class);
+                intent.putExtra("tweet", Parcels.wrap(tweet));
+                context.startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -64,8 +99,9 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
-        public ImageView user_profile;
+        public ImageView user_profile, tweet_image;
         public TextView user_name, user_screen_name, tweet_created_at, tweet_status;
+        LinearLayout tweet_body;
 
         public ViewHolder(View view){
             super(view);
@@ -75,6 +111,8 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
             user_screen_name = view.findViewById(R.id.user_screen_name);
             tweet_created_at = view.findViewById(R.id.tweet_created_at);
             tweet_status = view.findViewById(R.id.tweet_text);
+            tweet_image = view.findViewById(R.id.tweet_image);
+            tweet_body = view.findViewById(R.id.tweet_body);
         }
 
     }

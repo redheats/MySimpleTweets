@@ -33,7 +33,9 @@
                     android:scheme="@string/intent_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.TwitterTimeline"></activity>
+        <activity android:name=".activities.TwitterTimeline" />
+        <activity android:name=".activities.ViewUser" />
+        <activity android:name=".activities.ViewTweet"></activity>
     </application>
 
 </manifest>

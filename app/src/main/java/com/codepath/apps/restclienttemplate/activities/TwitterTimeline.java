@@ -1,157 +1,107 @@
 package com.codepath.apps.restclienttemplate.activities;
 
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.content.Intent;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.TwitterClient;
-import com.codepath.apps.restclienttemplate.adapters.TweetAdapter;
+import com.codepath.apps.restclienttemplate.adapters.ViewPagerAdapter;
+import com.codepath.apps.restclienttemplate.fragment.Mention;
 import com.codepath.apps.restclienttemplate.fragment.NewTweet;
-import com.codepath.apps.restclienttemplate.models.Tweet;
+import com.codepath.apps.restclienttemplate.fragment.Timeline;
+import com.codepath.apps.restclienttemplate.models.User;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
+import org.parceler.Parcels;
 
 import cz.msebera.android.httpclient.Header;
 
 public class TwitterTimeline extends AppCompatActivity {
 
-     public static TweetAdapter tweetAdapter;
-   public static ArrayList<Tweet> tweets;
-    RecyclerView recyclerView;
-    LinearLayoutManager linearLayoutManager;
-    TwitterClient client;
-    SwipeRefreshLayout swipeRefreshLayout;
-    FloatingActionButton floatingActionButton;
+
 
     Toolbar toolbar;
+    User user;
+    TwitterClient twitterClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_twitter_timeline);
 
+        twitterClient = TwitterApp.getTwitterClient(this);
+        getCurrentUser();
+
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setIcon(R.drawable.twitter);
 
+        ViewPager viewPager = findViewById(R.id.view_pager);
+        setupViewPager(viewPager);
 
-        swipeRefreshLayout = findViewById(R.id.timeline_refresh);
-
-        tweets = new ArrayList<>();
-        client = TwitterApp.getTwitterClient(this);
-
-        linearLayoutManager = new LinearLayoutManager(this);
-
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(linearLayoutManager);
-
-        tweetAdapter = new TweetAdapter(this, tweets);
-        recyclerView.setAdapter(tweetAdapter);
-
-        floatingActionButton=findViewById(R.id.floating_action_button);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                NewTweet newTweet=NewTweet.newInstance();
-                newTweet.show(getSupportFragmentManager(),"newtweetfragment");
-            }
-        });
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
+        tabLayout.setSelectedTabIndicatorColor(getResources().getColor(R.color.colorAccent));
+        tabLayout.setupWithViewPager(viewPager);
 
 
-        populateTimeline();
-
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                populateTimeline();
-            }
-        });
-
-        recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                if (!recyclerView.canScrollVertically(1)){
-                    loadMore(tweets.get(tweets.size()-1).id);
-                }
-            }
-        });
 
     }
 
-    private void loadMore(long id) {
-        client.loadMore(new JsonHttpResponseHandler(){
+    private void getCurrentUser() {
+        twitterClient.getCurrentUser(new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                for (int i=0;i<response.length();i++){
-                    try {
-                        Tweet tweet = Tweet.fromJSON(response.getJSONObject(i));
-                        tweets.add(tweet);
-                        tweetAdapter.notifyItemInserted(tweets.size() - 1);
-                    }
-                    catch (JSONException e){
-                        e.printStackTrace();
-                    }
-                }
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                user = User.fromJSON(response);
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.e("FAILURE", errorResponse.toString());
-            }
-        },
-        id);
-    }
-
-    private void populateTimeline() {
-        tweets.clear();
-        tweetAdapter.notifyDataSetChanged();
-        client.getHomeTimeline(new JsonHttpResponseHandler(){
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                for (int i=0;i<response.length();i++){
-                    try {
-                        Tweet tweet = Tweet.fromJSON(response.getJSONObject(i));
-                        tweets.add(tweet);
-                        tweetAdapter.notifyItemInserted(tweets.size() - 1);
-                    }
-                    catch (JSONException e){
-                        e.printStackTrace();
-                        Toast.makeText(TwitterTimeline.this, e.toString(), Toast.LENGTH_SHORT).show();
-                    }
-                }
-                swipeRefreshLayout.setRefreshing(false);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.e("FAILURE", errorResponse.toString());
-                swipeRefreshLayout.setRefreshing(false);
-
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                Log.e("FAILURE", errorResponse.toString());
-                swipeRefreshLayout.setRefreshing(false);
-
+                //
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.timeline_menu, menu);
+        MenuItem composeAction=menu.findItem(R.id.compose_tweet);
+        MenuItem profileAction=menu.findItem(R.id.view_my_profile);
+        return  true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.compose_tweet:
+                NewTweet newTweet =NewTweet.newInstance();
+                newTweet.show(getSupportFragmentManager(),"compose");
+                return true;
+            case R.id.view_my_profile:
+                Intent intent = new Intent(this, ViewUser.class);
+                intent.putExtra("self", Parcels.wrap(user));
+                startActivity(intent);
+        }
+        return super.onOptionsItemSelected(item);
 
     }
+
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter viewPagerAdapter =new ViewPagerAdapter(getSupportFragmentManager());
+        viewPagerAdapter.addFragment(new Timeline(), "Timeline");
+        viewPagerAdapter.addFragment(new Mention(),"Mention");
+        viewPager.setAdapter(viewPagerAdapter);
+    }
+
+
 }

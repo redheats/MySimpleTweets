@@ -103,8 +103,8 @@ public class NewTweet extends DialogFragment  {
                                     @Override
                                     public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                                         Tweet tweet =Tweet.fromJSON(response);
-                                        TwitterTimeline.tweets.add(tweet);
-                                        TwitterTimeline.tweetAdapter.notifyItemInserted(0);
+                                        Timeline.tweets.add(tweet);
+                                        Timeline.tweetAdapter.notifyItemInserted(0);
 
                                     }
 
@@ -122,8 +122,8 @@ public class NewTweet extends DialogFragment  {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 user=User.fromJSON(response);
-                newtweet_user_screen_name.setText(user.screen_name);
-                newtweet_user_name.setText(user.screen_name);
+                newtweet_user_screen_name.setText("@"+user.screen_name);
+                newtweet_user_name.setText(user.name);
                 Glide.with(getContext())
                     .load(Uri.parse(user.profile_image_url))
                         .into(newtweet_user_profile);

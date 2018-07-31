@@ -8,7 +8,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <LinearLayout
+    <RelativeLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -21,6 +21,7 @@
             android:background="#00ffffff"/>
 
         <LinearLayout
+            android:layout_alignParentEnd="true"
             android:layout_gravity="end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -50,7 +51,7 @@
                 app:srcCompat="@drawable/ic_launcher" />
         </LinearLayout>
 
-    </LinearLayout>
+    </RelativeLayout>
     <EditText
         android:id="@+id/newtweet_text"
         android:layout_width="match_parent"

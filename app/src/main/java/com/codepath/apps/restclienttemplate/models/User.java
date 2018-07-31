@@ -2,7 +2,9 @@ package com.codepath.apps.restclienttemplate.models;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcel;
 
+@Parcel
 public class User {
     public String name;
     public long id;
@@ -24,5 +26,9 @@ public class User {
             e.printStackTrace();
         }
         return user;
+    }
+
+    public User(){
+
     }
 }
